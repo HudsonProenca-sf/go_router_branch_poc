@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:go_router/go_router.dart';
+import 'package:go_router_branch_poc/routes.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +10,7 @@ void main() {
 }
 
 final GoRouter _router = GoRouter(
+  errorBuilder: (context, state) => const ErrorScreen(),
   routes: <RouteBase>[
     GoRoute(
       path: '/',
@@ -17,9 +19,13 @@ final GoRouter _router = GoRouter(
       },
       routes: [
         GoRoute(
-          path: 'users/:userId',
+          path: UserProfileRouteParms.route,
           builder: (BuildContext context, GoRouterState state) {
-            return UserScreen(userId: state.pathParameters['userId']!);
+            if (UserProfileRouteParms.hasValidParams(state.pathParameters)) {
+              return UserScreen(userId: state.pathParameters['userId']!);
+            } else {
+              return const ErrorScreen();
+            }
           },
         ),
         GoRoute(
@@ -110,8 +116,12 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () => context.go('/users/123'),
+              onPressed: () => context.go(UserProfileRouteParms('123').toUrl()),
               child: const Text('User'),
+            ),
+            ElevatedButton(
+              onPressed: () => context.goToRoute(UserProfileRouteParms('234')),
+              child: const Text('User2'),
             ),
             ElevatedButton(
               onPressed: () => context.go('/organizations/1'),
@@ -126,6 +136,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () =>
                   context.go('/organizations/2/members/4/projects/mgmresorts'),
               child: const Text('Organizations + members + projects'),
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/org'),
+              child: const Text('Unregistered page'),
             ),
           ],
         ),
@@ -197,6 +211,22 @@ class ProjectsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Projects Screen')),
       body: Center(child: Text('Project $id')),
+    );
+  }
+}
+
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Error Screen')),
+      body: const Center(
+        child: Text(
+          "We couldn't find the page you're looking for",
+        ),
+      ),
     );
   }
 }
