@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:go_router/go_router.dart';
+import 'package:go_router_branch_poc/error_page.dart';
 import 'package:go_router_branch_poc/routes.dart';
+
+import 'my_route.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +13,7 @@ void main() {
 }
 
 final GoRouter _router = GoRouter(
-  errorBuilder: (context, state) => const ErrorScreen(),
+  errorBuilder: (context, state) => const ErrorPage(),
   routes: <RouteBase>[
     GoRoute(
       path: '/',
@@ -18,16 +21,7 @@ final GoRouter _router = GoRouter(
         return const HomeScreen();
       },
       routes: [
-        GoRoute(
-          path: UserProfileRouteParms.route,
-          builder: (BuildContext context, GoRouterState state) {
-            if (UserProfileRouteParms.hasValidParams(state.pathParameters)) {
-              return UserScreen(userId: state.pathParameters['userId']!);
-            } else {
-              return const ErrorScreen();
-            }
-          },
-        ),
+        MyRoute(route: UserProfileRoute()),
         GoRoute(
           path: 'organizations/:orgId',
           builder: (BuildContext context, GoRouterState state) {
@@ -116,11 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () => context.go(UserProfileRouteParms('123').toUrl()),
+              onPressed: () =>
+                  context.go(UserProfileRouteParams('123').toUrl()),
               child: const Text('User'),
             ),
             ElevatedButton(
-              onPressed: () => context.goToRoute(UserProfileRouteParms('234')),
+              onPressed: () => context.goToRoute(UserProfileRouteParams('234')),
               child: const Text('User2'),
             ),
             ElevatedButton(
@@ -211,22 +206,6 @@ class ProjectsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Projects Screen')),
       body: Center(child: Text('Project $id')),
-    );
-  }
-}
-
-class ErrorScreen extends StatelessWidget {
-  const ErrorScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Error Screen')),
-      body: const Center(
-        child: Text(
-          "We couldn't find the page you're looking for",
-        ),
-      ),
     );
   }
 }
