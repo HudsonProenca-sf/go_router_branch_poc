@@ -3,12 +3,22 @@ import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router_branch_poc/error_page.dart';
 import 'package:go_router_branch_poc/routes.dart';
+import 'package:go_router_branch_poc/user_route.dart';
 
-import 'my_route.dart';
+import 'organization_route.dart';
+
+class AppRoutes {
+  static final organization = OrganizationRoute();
+  static final user = UserRoute();
+
+  static List<AppRoute> routes = [
+    organization,
+    user,
+  ];
+}
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // FlutterBranchSdk.validateSDKIntegration();
   runApp(const MyApp());
 }
 
@@ -16,38 +26,39 @@ final GoRouter _router = GoRouter(
   errorBuilder: (context, state) => const ErrorPage(),
   routes: <RouteBase>[
     GoRoute(
-      path: '/',
-      builder: (BuildContext context, GoRouterState state) {
-        return const HomeScreen();
-      },
-      routes: [
-        MyRoute(route: UserProfileRoute()),
-        GoRoute(
-          path: 'organizations/:orgId',
-          builder: (BuildContext context, GoRouterState state) {
-            return OrganizationScreen(
-              id: state.pathParameters['orgId']!,
-              params: state.uri.queryParameters,
-            );
-          },
-          routes: [
-            GoRoute(
-              path: 'members/:memberId',
-              builder: (context, state) => MemberScreen(
-                id: state.pathParameters['memberId']!,
-              ),
-              routes: [
-                GoRoute(
-                  path: 'projects/:projectId',
-                  builder: (context, state) =>
-                      ProjectsScreen(id: state.pathParameters['projectId']!),
-                )
-              ],
-            ),
-          ],
+        path: '/',
+        builder: (BuildContext context, GoRouterState state) {
+          return const HomeScreen();
+        },
+        routes: AppRoutes.routes
+        // [
+        //   ...,
+        //   GoRoute(
+        //     path: 'organizations/:orgId',
+        //     builder: (BuildContext context, GoRouterState state) {
+        //       return OrganizationScreen(
+        //         id: state.pathParameters['orgId']!,
+        //         params: state.uri.queryParameters,
+        //       );
+        //     },
+        //     routes: [
+        //       GoRoute(
+        //         path: 'members/:memberId',
+        //         builder: (context, state) => MemberScreen(
+        //           id: state.pathParameters['memberId']!,
+        //         ),
+        //         routes: [
+        //           GoRoute(
+        //             path: 'projects/:projectId',
+        //             builder: (context, state) =>
+        //                 ProjectsScreen(id: state.pathParameters['projectId']!),
+        //           )
+        //         ],
+        //       ),
+        //     ],
+        //   ),
+        // ],
         ),
-      ],
-    ),
   ],
 );
 
@@ -111,15 +122,12 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ElevatedButton(
               onPressed: () =>
-                  context.go(UserProfileRouteParams('123').toUrl()),
+                  AppRoutes.user.goToRoute(context, UserParams('590')),
               child: const Text('User'),
             ),
             ElevatedButton(
-              onPressed: () => context.goToRoute(UserProfileRouteParams('234')),
-              child: const Text('User2'),
-            ),
-            ElevatedButton(
-              onPressed: () => context.go('/organizations/1'),
+              onPressed: () => AppRoutes.organization
+                  .goToRoute(context, OrganizationParams('789654')),
               child: const Text('Organizations'),
             ),
             ElevatedButton(
@@ -135,6 +143,37 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: () => context.go('/org'),
               child: const Text('Unregistered page'),
+            ),
+            ElevatedButton(
+              onPressed: () => showDialog(
+                context: context,
+                builder: (context) => const AlertDialog(title: Text('Hey')),
+              ),
+              child: const Text('Show dialog'),
+            ),
+            ElevatedButton(
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                builder: (context) => const Center(child: Text('Hey')),
+              ),
+              child: const Text('Show bottom sheet'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Scaffold(
+                    appBar: AppBar(
+                      leading: BackButton(
+                        onPressed: Navigator.of(context).pop,
+                      ),
+                    ),
+                    body: const Center(
+                      child: Text('This is a material page route'),
+                    ),
+                  ),
+                ),
+              ),
+              child: const Text('Material route'),
             ),
           ],
         ),

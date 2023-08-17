@@ -1,55 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:go_router_branch_poc/main.dart';
 
-abstract class Routable {
+mixin AnalyticsRoute on RouteConfiguration {
+  String get analyticsName;
+}
+
+abstract class AppRouteParameters<T> {
+  T pathParamsFromMap(Map<String, String> params);
+  bool hasValidParams(Map<String, String> params);
+
+  String toUriString(T params);
+  Widget toPage(T params);
+}
+
+abstract class AppRouteConfiguration<AppRouteParameters> {
+  AppRouteParameters get params;
   String get name;
   String get path;
-
-  RoutableParams? hasValidParams(Map<String, String> params);
 }
 
-abstract class RoutableParams {
-  String toUrl();
-  Widget toPage();
-}
+abstract class AppRoute<T> extends GoRoute {
+  final AppRouteConfiguration<AppRouteParameters<T>> configuration;
 
-class UserProfileRoute implements Routable {
-  @override
-  final name = 'user profile';
-  @override
-  final path = 'users/:userId';
+  AppRoute({
+    required this.configuration,
+    super.redirect,
+    super.parentNavigatorKey,
+    super.routes,
+  }) : super(
+            path: configuration.path,
+            name: configuration.name,
+            builder: (_, state) {
+              final hasValidParams =
+                  configuration.params.hasValidParams(state.pathParameters);
 
-  UserProfileRoute();
+              if (!hasValidParams) {
+                // redirect
+              }
 
-  @override
-  RoutableParams? hasValidParams(Map<String, String> params) {
-    final userId = params['userId'];
-    if (userId != null) {
-      return UserProfileRouteParams(userId);
-    }
-    return null;
-  }
-}
+              final params =
+                  configuration.params.pathParamsFromMap(state.pathParameters);
 
-class UserProfileRouteParams implements RoutableParams {
-  final String userId;
-
-  UserProfileRouteParams(this.userId);
-
-  @override
-  String toUrl() => '/users/$userId';
-
-  @override
-  Widget toPage() {
-    return UserScreen(
-      userId: userId,
-    );
-  }
-}
-
-extension RoutableRoute on BuildContext {
-  void goToRoute(RoutableParams route) {
-    return go(route.toUrl());
-  }
+              return configuration.params.toPage(params);
+            });
 }
