@@ -13,7 +13,7 @@ class MyRoute extends GoRoute {
           name: route.name,
           path: route.path,
           builder: (context, state) {
-            final routeParams = route.hasValidParams(state.pathParameters);
+            final routeParams = route.hasValidParams(state.uri.queryParameters);
             return routeParams?.toPage() ?? const ErrorPage();
           },
         );

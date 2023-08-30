@@ -6,7 +6,7 @@ abstract class Routable {
   String get name;
   String get path;
 
-  RoutableParams? hasValidParams(Map<String, String> params);
+  RoutableParams? hasValidParams(Map<String, String> queryParams);
 }
 
 abstract class RoutableParams {
@@ -18,7 +18,7 @@ class UserProfileRoute implements Routable {
   @override
   final name = 'user profile';
   @override
-  final path = 'users/:userId';
+  final path = 'user';
 
   UserProfileRoute();
 
@@ -38,7 +38,16 @@ class UserProfileRouteParams implements RoutableParams {
   UserProfileRouteParams(this.userId);
 
   @override
-  String toUrl() => '/users/$userId';
+  String toUrl() => Uri(
+        path: '/user',
+        queryParameters: _queryParams,
+      ).toString();
+
+  Map<String, Object> get _queryParams => {
+        'userId': userId,
+        'name': 'name',
+        'email': 'email',
+      };
 
   @override
   Widget toPage() {
